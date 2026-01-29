@@ -75,5 +75,3 @@ plt.ylabel("Z Velocity (m/s)")
 plt.grid()
 plt.tight_layout()
 plt.show()
-
-

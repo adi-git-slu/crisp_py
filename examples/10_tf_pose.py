@@ -27,5 +27,3 @@ robot.wait_until_ready()
 
 print(f"Current pose from TF: {robot.end_effector_pose}")
 print(f"Current pose after move: {robot.end_effector_pose}")
-
-
