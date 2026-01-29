@@ -58,7 +58,7 @@ try:
             rate.sleep()
             t += 1.0 / ctrl_freq
             n_steps += 1
-        
+
         print(f"Completed {n_steps} steps in {t:.2f} seconds corresponding to frequency {n_steps / t:.2f} Hz")
 
 except KeyboardInterrupt:
