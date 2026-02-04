@@ -4,21 +4,20 @@ version = "3.1.0"
 description = "Simple python interface to control robots that use crisp_controllers and other ROS2 components."
 readme = "README.md"
 license-files = ["LICENSE.md"]
-requires-python = ">=3.11"
-dependencies = [
-    "scipy",
-    "numpy<=2.3"
-]
+requires-python = ">=3.10"
+dynamic = ["dependencies"]
 
 [project.urls]
 Homepage = "https://utiasDSL.github.io/crisp_controllers/"
 
-[tool.setuptools.packages.find]
-exclude = ["config", "examples", "build", "scripts", "media", "docs", "tests"]
-include = ["crisp_py*"]
+[tool.poetry]
+packages = [{include = "crisp_py"}]
 
-[tool.setuptools]
-include-package-data = true
+[tool.poetry.dependencies]
+python = ">=3.10"
+scipy = "*"
+scipy-stubs = "*"
+numpy = "<=2.3"
 
 [tool.ruff]
 exclude = [
@@ -42,12 +41,11 @@ exclude = [
 
 line-length = 100
 indent-width = 4
-target-version = "py311"
+target-version = "py310"
 
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
+requires = ["poetry-core>=2.0.1"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]
