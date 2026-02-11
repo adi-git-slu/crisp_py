@@ -303,6 +303,128 @@ class TestRobotTargetSetting:
                     robot.set_target_wrench(torque=[1.0, 2.0, 3.0, 4.0])
 
 
+class TestRobotMoveToJoint:
+    """Test move_to_joint functionality."""
+
+    def test_move_to_joint_calls_send_joint_config(self):
+        """Test move_to_joint sends the correct joint config."""
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
+            mock_rclpy.ok.return_value = True
+
+            with (
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
+            ):
+                mock_node = Mock()
+                mock_node.create_publisher.return_value = Mock()
+                mock_node.create_subscription.return_value = Mock()
+                mock_node.create_timer.return_value = Mock()
+                mock_rclpy.create_node.return_value = mock_node
+
+                config = RobotConfig(joint_names=["j1", "j2"], home_config=[0, 0])
+                robot = Robot(robot_config=config, spin_node=False)
+
+                q = np.array([0.5, -0.3])
+                robot.move_to_joint(q, time_to_goal=3.0, blocking=False)
+
+                robot.joint_trajectory_controller_client.send_joint_config.assert_called_once_with(
+                    ["j1", "j2"],
+                    [0.5, -0.3],
+                    3.0,
+                    blocking=False,
+                )
+                robot.controller_switcher_client.switch_controller.assert_not_called()
+
+    def test_move_to_joint_resets_targets(self):
+        """Test move_to_joint resets target pose and joint after execution."""
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
+            mock_rclpy.ok.return_value = True
+
+            with (
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
+            ):
+                mock_node = Mock()
+                mock_node.create_publisher.return_value = Mock()
+                mock_node.create_subscription.return_value = Mock()
+                mock_node.create_timer.return_value = Mock()
+                mock_rclpy.create_node.return_value = mock_node
+
+                config = RobotConfig(joint_names=["j1", "j2"], home_config=[0, 0])
+                robot = Robot(robot_config=config, spin_node=False)
+
+                robot._target_pose = Pose(np.array([1, 2, 3]), Rotation.identity())
+                robot._target_joint = np.array([0.1, 0.2])
+
+                robot.move_to_joint(np.array([0.5, -0.3]), blocking=False)
+
+                assert robot._target_pose is None
+                assert robot._target_joint is None
+                robot.controller_switcher_client.switch_controller.assert_not_called()
+
+    def test_move_to_joint_wrong_size(self):
+        """Test move_to_joint raises error with wrong joint size."""
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
+            mock_rclpy.ok.return_value = True
+
+            with (
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
+            ):
+                mock_node = Mock()
+                mock_node.create_publisher.return_value = Mock()
+                mock_node.create_subscription.return_value = Mock()
+                mock_node.create_timer.return_value = Mock()
+                mock_rclpy.create_node.return_value = mock_node
+
+                config = RobotConfig(joint_names=["j1", "j2"], home_config=[0, 0])
+                robot = Robot(robot_config=config, spin_node=False)
+
+                with pytest.raises(AssertionError, match="Joint configuration must be of size nq"):
+                    robot.move_to_joint(np.array([0.1, 0.2, 0.3]))
+                robot.controller_switcher_client.switch_controller.assert_not_called()
+
+    def test_home_delegates_to_move_to_joint(self):
+        """Test home calls move_to_joint with home config."""
+        with patch("crisp_py.robot.robot.rclpy") as mock_rclpy:
+            mock_rclpy.ok.return_value = True
+
+            with (
+                patch("crisp_py.robot.robot.ControllerSwitcherClient"),
+                patch("crisp_py.robot.robot.JointTrajectoryControllerClient"),
+                patch("crisp_py.robot.robot.ParametersClient"),
+                patch("crisp_py.robot.robot.CallbackMonitor"),
+            ):
+                mock_node = Mock()
+                mock_node.create_publisher.return_value = Mock()
+                mock_node.create_subscription.return_value = Mock()
+                mock_node.create_timer.return_value = Mock()
+                mock_rclpy.create_node.return_value = mock_node
+
+                config = RobotConfig(
+                    joint_names=["j1", "j2"], home_config=[0.0, 0.1], time_to_home=3.0
+                )
+                robot = Robot(robot_config=config, spin_node=False)
+
+                with patch.object(robot, "move_to_joint") as mock_move:
+                    robot.home(blocking=False)
+
+                    robot.controller_switcher_client.switch_controller.assert_called_once_with(
+                        "joint_trajectory_controller"
+                    )
+                    mock_move.assert_called_once()
+                    args = mock_move.call_args
+                    np.testing.assert_array_equal(args[0][0], np.array([0.0, 0.1]))
+                    assert args[0][1] == 3.0
+                    assert args[0][2] is False
+
+
 class TestRobotUtilities:
     """Test robot utility functions."""
 
