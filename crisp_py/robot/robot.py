@@ -553,10 +553,22 @@ class Robot:
     def home(self, home_config: list[float] | None = None, blocking: bool = True):
         """Home the robot."""
         self.controller_switcher_client.switch_controller("joint_trajectory_controller")
+        q = self.config.home_config if home_config is None else home_config
+        self.move_to_joint(np.array(q), self.config.time_to_home, blocking)
+
+    def move_to_joint(self, q: NDArray, time_to_goal: float = 5.0, blocking: bool = True):
+        """Move the robot to a target joint configuration using the joint trajectory controller.
+
+        Args:
+            q (NDArray): Target joint configuration of size nq.
+            time_to_goal (float, optional): Time in seconds to reach the target. Defaults to 5.0.
+            blocking (bool, optional): Whether to wait for completion. Defaults to True.
+        """
+        assert len(q) == self.nq, "Joint configuration must be of size nq."
         self.joint_trajectory_controller_client.send_joint_config(
             self.config.joint_names,
-            self.config.home_config if home_config is None else home_config,
-            self.config.time_to_home,
+            list(q),
+            time_to_goal,
             blocking=blocking,
         )
 
