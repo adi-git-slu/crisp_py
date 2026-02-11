@@ -1,0 +1,45 @@
+limit_error: true
+limit_torques: true
+
+max_delta_tau: 0.5
+
+task.k_pos_x: 0.0 # has to be zero so that torque for task space is zero
+task.k_pos_y: 0.0
+task.k_pos_z: 0.0
+task.k_rot_x: 0.0
+task.k_rot_y: 0.0
+task.k_rot_z: 0.0
+task.d_pos_x: -1.0
+task.d_pos_y: -1.0
+task.d_pos_z: -1.0
+task.d_rot_x: -1.0
+task.d_rot_y: -1.0
+task.d_rot_z: -1.0
+
+filter.q: 0.1
+filter.dq: 0.1
+filter.q_ref: 0.9
+
+nullspace.stiffness: 5.0
+nullspace.projector_type: none  # So we are directly controlling the joints!
+nullspace.damping: 0.25  # Kd = 2 * sqrt(Kp) if damping == 0.0 else Kd = weight * damping
+nullspace.max_tau: 5.0
+nullspace.regularization: 1.0e-06
+
+nullspace.weights.fr3_joint1.value: 120.0 # Kp = weight * stiffness, Kp = 600 = 120.0 * 5.0
+nullspace.weights.fr3_joint2.value: 120.0
+nullspace.weights.fr3_joint3.value: 120.0
+nullspace.weights.fr3_joint4.value: 120.0
+nullspace.weights.fr3_joint5.value: 50.0
+nullspace.weights.fr3_joint6.value: 30.0
+nullspace.weights.fr3_joint7.value: 10.0
+
+stop_commands: false
+
+use_coriolis_compensation: true
+use_friction: false
+use_gravity_compensation: false
+use_local_jacobian: true
+use_operational_space: false
+use_sim_time: false
+
