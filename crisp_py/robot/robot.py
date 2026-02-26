@@ -619,7 +619,7 @@ class Robot:
 
         return desired_pose
 
-    def is_homed(self) -> bool:
+    def is_homed(self, tol: float = 1e-3) -> bool:
         """Check if the robot is homed.
 
         This method checks if the robot's current joint configuration matches the home configuration.
@@ -627,7 +627,7 @@ class Robot:
         Returns:
             bool: True if the robot is homed, False otherwise.
         """
-        return np.allclose(self.joint_values, self.config.home_config, atol=1e-3)
+        return np.allclose(self.joint_values, self.config.home_config, atol=tol)
 
     def shutdown(self):
         """Shutdown the node."""
