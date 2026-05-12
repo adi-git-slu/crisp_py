@@ -42,4 +42,3 @@ use_gravity_compensation: false
 use_local_jacobian: true
 use_operational_space: false
 use_sim_time: false
-
